@@ -19,14 +19,19 @@ conn = psycopg2.connect(
 cur = conn.cursor()
 
 
-def wyczysc_baze():
-    # Kolejność usuwania jest ważna ze względu na klucze obce (FK)
-    tabele = ['Sprzedaż', 'Produkt', 'Klient', 'Dostawca', 'Data', 'Kategoria', 'Adres']
-    for tabela in tabele:
-        # TRUNCATE usuwa wszystko, RESTART IDENTITY zeruje liczniki ID na 1
-        cur.execute(f"TRUNCATE TABLE {tabela} RESTART IDENTITY CASCADE;")
-    conn.commit()
-    print("Baza wyczyszczona – zaczynamy od nowa.")
+def setup_database():
+    global conn, cur
+
+    try:
+        with open('schema.sql', 'r', encoding='utf-8') as f:
+            sql_schema = f.read()
+
+        cur.execute(sql_schema)
+        conn.commit()
+        print("Tabele zostały utworzone pomyślnie.")
+    except Exception as e:
+        print(f"Błąd podczas tworzenia tabel: {e}")
+        conn.rollback()
 
 def generuj_adresy(n):
     for i in range(n):
@@ -110,7 +115,7 @@ def generuj_produkty(n):
             (id_kat, nazwa, marka, opis, rozmiar, kolor)
         )
     conn.commit()
-    print(f"Dodano {n} produktów z dopasowaną logiką kategorii.")
+    print(f"Dodano {n} produktów.")
 
 def generuj_date():
     licznik = 0
@@ -124,7 +129,7 @@ def generuj_date():
                 )
                 licznik += 1
     conn.commit()
-    print(f"Wygenerowano wymiar czasu: {licznik} dni (lata 2021-2024).")
+    print(f"Wygenerowano {licznik} dni (lata 2021-2024).")
 
 
 def generuj_sprzedaz(n, ile_p, ile_k, ile_dat, ile_dos):
@@ -152,10 +157,9 @@ def generuj_sprzedaz(n, ile_p, ile_k, ile_dat, ile_dos):
             (id_p, id_k, id_d, id_dos, ilosc, cena_podst, rabat, cena_ost)
         )
     conn.commit()
-    print(f"Zasilono tabelę faktów o {n} transakcji.")
+    print(f"Tabelę faktów {n} transakcji.")
 
-
-wyczysc_baze()
+setup_database()
 
 generuj_adresy(60)
 generuj_kategorie()
