@@ -243,7 +243,7 @@ def on_generate():
               SELECT p.nazwa,
                      p.marka,
                      SUM(v.ilosc) AS "Sztuki",
-                     ROUND(SUM((v.cena_podstawowa - v.cena_ostateczna) * v.ilosc), 2) AS "Suma Rabatów"
+                     ROUND(SUM((v.cena_podstawowa * v.ilosc) - v.cena_ostateczna), 2) AS "Suma Rabatów"
               FROM Widok_Zawezony v
                      JOIN Produkt p ON v.ID_produktu = p.ID_produktu
                      JOIN Kategoria k ON p.ID_kategorii = k.ID_kategorii
